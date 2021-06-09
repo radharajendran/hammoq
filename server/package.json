@@ -1,0 +1,21 @@
+{
+  "name": "hammoq",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node bin/www"
+  },
+  "dependencies": {
+    "@babel/register": "^7.13.16",
+    "babel-node": "*",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "express-promise-router": "^4.1.0",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "mongoose": "^5.12.13",
+    "morgan": "~1.9.1"
+  }
+}
