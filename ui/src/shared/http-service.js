@@ -44,11 +44,12 @@ const get = (url) => {
     });
 };
 
-const post = (url, data) => {   
-    return request({
+const post = (url, data, config) => { 
+    return request({          
         url: `${url}`,
         method: `POST`,
         data: data || {},
+        ...config || { headers: { 'content-type': 'application/json' } }
     });
 };
 

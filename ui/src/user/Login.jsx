@@ -1,4 +1,5 @@
-import { Form, Input, Button, Layout, Row, Col } from 'antd';
+import { Form, Input, Button, Layout, Row, Col, message } from 'antd';
+import { post } from '../shared/http-service'
 
 const { Header, Footer } = Layout;
 
@@ -17,6 +18,27 @@ const Login = () => {
 
     const onFinish = (values) => {
         console.log('Success:', values);
+
+        const config = {
+            headers: {
+                'content-type': 'application/json',
+            },
+        };
+
+        post(`/login`, values, config).then((res) => {
+
+            if (res.error) {
+                message.error(res.message);
+            }
+            else if (res._id) {
+                message.success('Login successfully completed');
+            }
+
+        })
+            .catch((error) => {
+                console.error(`Error occured in Login ${error}`);
+                message.error('Error occured in Login');
+            });
     };
 
     const onFinishFailed = (errorInfo) => {
@@ -36,7 +58,6 @@ const Login = () => {
                 <Form
                     {...layout}
                     name="basic"
-                    initialValues={{ remember: true }}
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                 >

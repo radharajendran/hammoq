@@ -37,7 +37,7 @@ const send = (req, res, responseData) =>{
         userData: meta
       });
     } catch (err) {
-      logger.error('When sending error response', err);
+      console.log('When sending error response', err);
     }
   }
   
