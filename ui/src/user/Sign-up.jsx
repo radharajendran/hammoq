@@ -54,6 +54,12 @@ const RegistrationForm = () => {
   const userData = useSelector(data => data);
   const dispatch = useDispatch()
 
+  const arrayBufferToBase64 = (buffer) => {
+    var binary = '';
+    var bytes = [].slice.call(new Uint8Array(buffer));
+    bytes.forEach((b) => binary += String.fromCharCode(b));
+    return window.btoa(binary);
+  };
   /**
    * Bind user details when refresh
    */
@@ -65,6 +71,11 @@ const RegistrationForm = () => {
         }
         else {
           form.setFieldsValue(res);
+          setState((state) => ({
+            ...state,
+            imageData: arrayBufferToBase64(res.imageBase64),
+            imageType: res.imageType
+          }));
         }
 
       })
@@ -294,6 +305,31 @@ const RegistrationForm = () => {
 
   }
 
+  const renderUpload = () => {
+    if (id) {
+      return (
+        <img height="130px" width="130px" src={`data:${state.imageType};base64,${state.imageData}`} />
+      )
+    }
+    else {
+      return (
+        <Upload
+          listType="picture-card"
+          fileList={state.fileList}
+          accept="image/jpeg, image/png, image/png, image/bmp"
+          onChange={onFileChange}
+          onPreview={handlePreview}
+          customRequest={customRequest}
+          maxCount="1"
+        >
+          <Button
+            icon={<UploadOutlined />}>Photo</Button>
+        </Upload>
+      )
+    }
+
+  }
+
   /**
    * Handling preview uploaded profile pic
    * @param {file} file
@@ -445,39 +481,9 @@ const RegistrationForm = () => {
                 </Button>
               </Form.Item>
             </Col>
-            <Col span={2}>
-              <Form.Item />
-              <Form.Item xs={{ span: 5, offset: 0 }} >
-                <Button
-                  icon={<DeleteOutlined />}
-                  htmlType="button"
-                  onClick={handleDeleteField('lastName')}
-                />
-              </Form.Item>
-              <Form.Item />
-              <Form.Item />
-              <Form.Item xs={{ span: 5, offset: 0 }} >
-                <Button
-                  icon={<DeleteOutlined />}
-                  htmlType="button"
-                  onClick={handleDeleteField('phoneNumber')}
-                />
-              </Form.Item>
-            </Col>
             <Col span={4}>
               <Form.Item>
-                <Image src={`data:${state.imageType};base64,${state.imageData}}`} visible={id ? "true" : "false"} />
-                <Upload
-                  listType="picture-card"
-                  fileList={state.fileList}
-                  accept="image/jpeg, image/png, image/png, image/bmp"
-                  onChange={onFileChange}
-                  onPreview={handlePreview}
-                  customRequest={customRequest}
-                  maxCount="1"
-                >
-                  <Button icon={<UploadOutlined />}>Photo</Button>
-                </Upload>
+                {renderUpload()}
               </Form.Item>
             </Col>
           </Row>

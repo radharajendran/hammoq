@@ -91,7 +91,7 @@ const dataLayer = {
             }
             
             userData = userData.toJSON();
-            userData.imageBase64 = new Buffer(userData.image.data).toString('base64');
+            userData.imageBase64 = new Buffer(userData.image.data).toString();
             userData.token = dataLayer.generateJwtToken(userData.email);
 
             return userData;
@@ -172,7 +172,10 @@ const dataLayer = {
 
         try {
             let userDoc = mongoose.model('users', userSchema);
-            return await userDoc.findById(data.id)
+            let userData = await userDoc.findById(data.id)
+            userData = userData.toJSON();
+            userData.imageBase64 = userData.image.data;
+            return userData;
         }
         catch (e) {
             console.log(`Error occured in get user ${e}`);
