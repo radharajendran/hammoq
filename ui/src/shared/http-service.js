@@ -45,11 +45,18 @@ const get = (url) => {
 };
 
 const post = (url, data, config) => { 
+
+    const cfg = config || {
+        headers: {
+            'content-type': 'application/json',
+        },
+    };
+
     return request({          
         url: `${url}`,
         method: `POST`,
         data: data || {},
-        ...config || { headers: { 'content-type': 'application/json' } }
+        ...cfg
     });
 };
 

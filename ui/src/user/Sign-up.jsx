@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Form, Input, Layout, Button, Upload, Row, Col, message } from 'antd';
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-import { UploadOutlined } from '@ant-design/icons';
-import { post } from '../shared/http-service'
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Layout, Button, Upload, Row, Col, message, Image, Modal, Space } from 'antd';
+import { PoweroffOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useParams } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux'
 
+import { post, put, get, remove } from '../shared/http-service'
+import updateUser from './../store/dispatcher'
 
 import './user.css';
 
@@ -44,15 +46,112 @@ const tailFormItemLayout = {
 
 
 const RegistrationForm = () => {
+
   const [form] = Form.useForm();
+
+  let { id } = useParams();
+
+  const userData = useSelector(data => data);
+  const dispatch = useDispatch()
+
+  /**
+   * Bind user details when refresh
+   */
+  const fetchUser = () => {
+    get(`/user_info/${id}`)
+      .then((res) => {
+        if (res.error) {
+          message.error(res.message);
+        }
+        else {
+          form.setFieldsValue(res);
+        }
+
+      })
+      .catch((error) => {
+        console.error(`Error occured in Password reset ${error}`);
+        message.error('Error occured in Password reset');
+      });
+  }
+
+  /**
+   * Delete user fields
+   */
+  const handleDeleteField = (field) => {
+
+    let data = { id: id, field: field }
+
+    remove(`/delete_user_info`, data)
+      .then((res) => {
+
+        if (res.error) {
+          message.error(res.message);
+        }
+        else {
+          message.success('Delete successfully completed');
+        }
+
+      })
+      .catch((error) => {
+        console.error(`Error occured in delete field ${error}`);
+        message.error('Error occured in delete field');
+      });
+  }
+
+  useEffect(() => {
+
+    if (id) {
+      /** User store data to get user details after logged in */
+      if (userData) {
+
+        console.log('userData---->', userData);
+        form.setFieldsValue(userData);
+
+        setState((state) => ({
+          ...state,
+          imageData: userData.imageBase64,
+          imageType: userData.imageType
+        }));
+      }
+      else {
+        fetchUser(id);
+      }
+
+    }
+
+  }, []);
 
 
   const [state, setState] = useState({
-    fileList: null
+    fileList: null,
+    isEdit: false,
+    modalVisible: false
   });
 
+  /**
+   * Signup API handling
+   */
   const handleSubmit = (values) => {
-    console.log('Received values of form: ', values);
+
+    let {
+      password,
+      confirmPassword
+    } = values
+
+    //If id available trigger update event
+    if (id) {
+      return handleUpdate(values);
+    }
+
+    if (!state.imageFile) {
+      message.error('Please upload Profile Photo ');
+      return;
+    }
+
+    if (!id && (password != confirmPassword)) {
+      message.error('Password and confirm password should be match');
+      return;
+    }
 
     let formData = new FormData();
 
@@ -64,7 +163,7 @@ const RegistrationForm = () => {
 
     const config = {
       headers: {
-        'content-type': 'multipart/form-data boundary=----WebKitFormBoundaryqTqJIxvkWFYqvP5s',
+        'content-type': 'multipart/form-data',
       },
     };
 
@@ -76,6 +175,7 @@ const RegistrationForm = () => {
         }
         else if (res._id) {
           message.success('Registration successfully completed');
+          window.location.href = '/#/login';
         }
 
       })
@@ -90,12 +190,71 @@ const RegistrationForm = () => {
     onSuccess("ok");
   }
 
-  const handleUpload = ({ file, onSuccess }) => {
-    setState((state) => ({
-      ...state,
-      file: file
-    }));
-    onSuccess("ok");
+  /**
+   * Clear Form
+   */
+  const handleClear = () => {
+    form.resetFields();
+  }
+
+  /**
+   * Form submit event for Reset Password
+   * @param {JSON} values 
+   * @returns 
+   */
+  const handleResetPassword = (values) => {
+
+    if (values.newPassword != values.confirmPassword) {
+      message.error('Password Mismatch');
+      return;
+    }
+
+    if (values.oldPassword == values.newPassword) {
+      message.error('Old and New password should not be same');
+      return;
+    }
+
+    values.id = id;
+    put(`/reset_password`, values)
+      .then((res) => {
+
+        if (res.error) {
+          message.error(res.message);
+        }
+        else {
+          message.success('Password reset completed');
+          window.location.href = '/#/login';
+        }
+
+      })
+      .catch((error) => {
+        console.error(`Error occured in Password reset ${error}`);
+        message.error('Error occured in Password reset');
+      });
+  }
+
+  /**
+   * Update user Info
+   */
+  const handleUpdate = (values) => {
+
+    values.id = id;
+    put(`/update_user_info`, values)
+      .then((res) => {
+
+        if (res.error) {
+          message.error(res.message);
+        }
+        else {
+          message.success('Update successfully completed');
+        }
+
+      })
+      .catch((error) => {
+        console.error(`Error occured in Update ${error}`);
+        message.error('Error occured in Update');
+      });
+
   }
 
   /*
@@ -107,6 +266,10 @@ const RegistrationForm = () => {
     reader.readAsDataURL(img);
   }
 
+  /**
+   * Handling File control events
+   * @param {*} info
+   */
   const onFileChange = async (info) => {
     let fileList = [...info.fileList];
 
@@ -131,6 +294,10 @@ const RegistrationForm = () => {
 
   }
 
+  /**
+   * Handling preview uploaded profile pic
+   * @param {file} file
+   */
   const handlePreview = async file => {
     let src = file.url;
     if (!src) {
@@ -145,13 +312,6 @@ const RegistrationForm = () => {
     const imgWindow = window.open(src);
     imgWindow.document.write(image.outerHTML);
   };
-
-  const uploadButton = (
-    <div>
-      {<PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Profile Photo</div>
-    </div>
-  );
 
   return (
 
@@ -169,7 +329,7 @@ const RegistrationForm = () => {
           scrollToFirstError
         >
           <Row>
-            <Col span={20}>
+            <Col span={18}>
               <Form.Item
                 name="firstName"
                 label="First Name"
@@ -183,16 +343,9 @@ const RegistrationForm = () => {
               >
                 <Input />
               </Form.Item>
-
               <Form.Item
                 name="lastName"
-                label="last Name"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your Last Name!',
-                  },
-                ]}
+                label="Last Name"
                 hasFeedback
               >
                 <Input />
@@ -217,6 +370,10 @@ const RegistrationForm = () => {
                 label="E-mail"
                 rules={[
                   {
+                    required: true,
+                    message: 'Please input your Email!',
+                  },
+                  {
                     type: 'email',
                     message: 'The input is not valid E-mail!',
                   }
@@ -228,7 +385,12 @@ const RegistrationForm = () => {
               <Form.Item
                 label="Password"
                 name="password"
-                rules={[{ required: true, message: 'Please input your password!' }]}
+                style={{ display: id ? 'none' : '' }}
+                rules={[
+                  {
+                    required: id ? false : true,
+                    message: 'Please input your password!'
+                  }]}
               >
                 <Input.Password />
               </Form.Item>
@@ -236,7 +398,12 @@ const RegistrationForm = () => {
               <Form.Item
                 label="Confirm Password"
                 name="confirmPassword"
-                rules={[{ required: true, message: 'Please input your password!' }]}
+                style={{ display: id ? 'none' : '' }}
+                rules={[
+                  {
+                    required: id ? false : true,
+                    message: 'Please input your password!'
+                  }]}
               >
                 <Input.Password />
               </Form.Item>
@@ -256,23 +423,50 @@ const RegistrationForm = () => {
                 ]}
               >
                 <Input />
-
               </Form.Item>
 
               <Form.Item {...tailFormItemLayout}>
+
                 <Button type="primary" htmlType="submit">
-                  Register
+                  {id ? 'Update' : 'Register'}
                 </Button>
-                <Button className="btn-space" htmlType="submit">
+                <Button className="btn-space" onClick={handleClear} htmlType="button">
                   Clear
                 </Button>
-                <Button className="btn-space" htmlType="submit">
-                  Update
+                <Button style={{ display: id ? '' : 'none' }}
+                  onClick={() => {
+                    setState((state) => ({
+                      ...state,
+                      modalVisible: true
+                    }));
+                  }}
+                  className="btn-space" htmlType="button">
+                  Reset Password
                 </Button>
               </Form.Item>
             </Col>
+            <Col span={2}>
+              <Form.Item />
+              <Form.Item xs={{ span: 5, offset: 0 }} >
+                <Button
+                  icon={<DeleteOutlined />}
+                  htmlType="button"
+                  onClick={handleDeleteField('lastName')}
+                />
+              </Form.Item>
+              <Form.Item />
+              <Form.Item />
+              <Form.Item xs={{ span: 5, offset: 0 }} >
+                <Button
+                  icon={<DeleteOutlined />}
+                  htmlType="button"
+                  onClick={handleDeleteField('phoneNumber')}
+                />
+              </Form.Item>
+            </Col>
             <Col span={4}>
-              <Form.Item >
+              <Form.Item>
+                <Image src={`data:${state.imageType};base64,${state.imageData}}`} visible={id ? "true" : "false"} />
                 <Upload
                   listType="picture-card"
                   fileList={state.fileList}
@@ -289,6 +483,58 @@ const RegistrationForm = () => {
           </Row>
 
         </Form>
+
+        {/* Reset passwor modal dialog box */}
+        <Modal
+          title="Reset Password"
+          visible={state.modalVisible}
+          onCancel={() => {
+            setState((state) => ({
+              ...state,
+              modalVisible: false
+            }));
+          }}
+          okButtonProps={{ form: 'reset-password-form', key: 'submit', htmlType: 'submit' }}
+
+        >
+          <Form id="reset-password-form" layout="vertical" onFinish={handleResetPassword} >
+            <Form.Item
+              label="Old Password"
+              name="oldPassword"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please input your Old password!'
+                }]}
+            >
+              <Input.Password />
+            </Form.Item>
+
+            <Form.Item
+              label="New Password"
+              name="newPassword"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please input your New password!'
+                }]}
+            >
+              <Input.Password />
+            </Form.Item>
+            <Form.Item
+              label="Confirm Password"
+              name="confirmPassword"
+              rules={[
+                {
+                  required: true,
+                  message: 'Please Confirm your password!'
+                }]}
+            >
+              <Input.Password />
+            </Form.Item>
+          </Form>
+        </Modal>
+
       </div>
     </div>
 

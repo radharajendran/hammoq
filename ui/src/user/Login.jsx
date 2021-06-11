@@ -1,7 +1,10 @@
 import { Form, Input, Button, Layout, Row, Col, message } from 'antd';
+import { useDispatch } from 'react-redux'
+
+import updateUser from './../store/dispatcher'
 import { post } from '../shared/http-service'
 
-const { Header, Footer } = Layout;
+const { Header } = Layout;
 
 const layout = {
     labelCol: { span: 8 },
@@ -15,23 +18,19 @@ const tailLayout = {
 const Login = () => {
 
     const [form] = Form.useForm();
+    const dispatch = useDispatch()
 
     const onFinish = (values) => {
-        console.log('Success:', values);
 
-        const config = {
-            headers: {
-                'content-type': 'application/json',
-            },
-        };
-
-        post(`/login`, values, config).then((res) => {
+        post(`/login`, values).then((res) => {
 
             if (res.error) {
                 message.error(res.message);
             }
             else if (res._id) {
                 message.success('Login successfully completed');
+                dispatch(updateUser(res));
+                window.location.href = `/#/userInfo/${res._id}`;
             }
 
         })
@@ -62,7 +61,7 @@ const Login = () => {
                     onFinishFailed={onFinishFailed}
                 >
                     <Form.Item
-                        label="Username"
+                        label="User"
                         name="username"
                         rules={[{ required: true, message: 'Please input your username!' }]}
                     >

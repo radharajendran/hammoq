@@ -1,3 +1,4 @@
 {
-    "dbConnection": "mongodb://localhost:27017/hammoq"
+    "dbConnection": "mongodb://localhost:27017/hammoq",
+    "SECRET_KEY": "jAmMmOqAuThKey@!$"
 }
