@@ -1,8 +1,8 @@
 # hammoq
 
-Clone project using https://github.com/radharajendran/hammoq.git
+#**Clone project using https://github.com/radharajendran/hammoq.git**
 
-Install Server component modules
+#**Install Server component modules**
 
 cd server
 npm install
