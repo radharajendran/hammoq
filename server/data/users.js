@@ -91,7 +91,7 @@ const dataLayer = {
             }
             
             userData = userData.toJSON();
-            userData.imageBase64 = new Buffer(userData.image.data).toString();
+            userData.imageBase64 = userData.image.data;
             userData.token = dataLayer.generateJwtToken(userData.email);
 
             return userData;

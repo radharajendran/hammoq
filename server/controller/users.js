@@ -36,18 +36,9 @@ const userController = {
      * @param {JSON} res 
      */
     login: async (req, res) => {
-
-        try {
-
-            let result = await data.signIn(req.body);
-            http.send(req, res, result);
-
-        } catch (e) {
-
-            console.log(`Error occured ${e}`)
-            http.send(req, res, {error: "login_error", message: `Error occured in user login`, err_stack: e})
-        }
-       
+        
+        let result = await data.signIn(req.body);
+        http.send(req, res, result);       
     },
 
     /**
@@ -57,16 +48,8 @@ const userController = {
      */
     updateUserInfo: async(req, res) => {
 
-        try {
-
-            let result = await data.updateUserInfo(req.body);
-            http.send(req, res, result);
-
-        } catch (e) {
-
-            console.log(`Error occured ${e}`)
-            http.send(req, res, {error: "user_update", message: `Error occured in user update`, err_stack: e})
-        }
+        let result = await data.updateUserInfo(req.body);
+        http.send(req, res, result);
     },
 
     /**
@@ -75,16 +58,9 @@ const userController = {
      * @returns JSON 
      */
     updateUserPassword: async(req, res) => {
-        try {
 
-            let result = await data.updateUserPassword(req.body);
-            http.send(req, res, result);
-
-        } catch (e) {
-
-            console.log(`Error occured ${e}`)
-            http.send(req, res, {error: "user_pwd_update", message: `Error occured in user password update`, err_stack: e})
-        }
+        let result = await data.updateUserPassword(req.body);
+        http.send(req, res, result);
     },    
 
     /**
@@ -93,16 +69,9 @@ const userController = {
      * @returns JSON 
      */
      deleteFields: async(req, res) => {
-        try {
 
-            let result = await data.deleteFields(req.body);
-            http.send(req, res, result);
-
-        } catch (e) {
-
-            console.log(`Error occured ${e}`)
-            http.send(req, res, {error: "user_field_update", message: `Error occured in user field update`, err_stack: e})
-        }
+        let result = await data.deleteFields(req.body);
+        http.send(req, res, result);
     },
 
      /**
@@ -111,16 +80,9 @@ const userController = {
      * @returns JSON 
      */
       getUserById: async(req, res) => {
-        try {
 
-            let result = await data.getUserById(req.params);
-            http.send(req, res, result);
-
-        } catch (e) {
-
-            console.log(`Error occured ${e}`)
-            http.send(req, res, {error: "user_select", message: `Error occured in user selecte`, err_stack: e})
-        }
+        let result = await data.getUserById(req.params);
+        http.send(req, res, result);
     }
 }
 

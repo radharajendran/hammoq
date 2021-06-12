@@ -120,7 +120,7 @@ const RegistrationForm = () => {
 
         setState((state) => ({
           ...state,
-          imageData: userData.imageBase64,
+          imageData: arrayBufferToBase64(userData.imageBase64),
           imageType: userData.imageType
         }));
       }
